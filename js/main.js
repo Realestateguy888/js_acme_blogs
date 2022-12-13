@@ -39,20 +39,19 @@ function createSelectOptions(users){
 
 
    function toggleCommentSection(postId) {
-            if (!postId) {
-                return undefined;
-            } else {
-                const commentSections = document.querySelectorAll('[data-post-id]');
-                for (let i = 0; i < commentSections.length; i++) {
-                    const commentSection = commentSections[i];
-                    if (commentSection.getAttribute('data-post-id') === postId) {
-                        commentSection.classList.toggle('hide');
-                        return commentSection;
-                    }
-                }
-                return null;
-            }   
-        }
+  if (!postId) {
+    return undefined;
+  } else {
+    const commentSection = document.querySelector(`[data-post-id="${postId}"]`);
+    if (commentSection) {
+      commentSection.classList.toggle('hide');
+      return commentSection;
+    } else {
+      return null;
+    }
+  }   
+}
+
 
 
 
@@ -74,15 +73,21 @@ function toggleCommentButton (postID) {
 
 
 function deleteChildElements(parentElement) {
-    let child = parentElement.lastElementChild;
-    while (child) {
-        parentElement.removeChild(child);
-        child = parentElement.lastElementChild;
-    }
-    return parentElement;
+  if (!parentElement || !(parentElement instanceof HTMLElement)) {
+    return undefined;
+  }
+
+  let child = parentElement.lastElementChild;
+  while (child) {
+    parentElement.removeChild(child);
+    child = parentElement.lastElementChild;
+  }
+  return parentElement;
 }
+
 let parentElement = document.getElementById('container');
 deleteChildElements(parentElement);
+
 
 
 
@@ -116,7 +121,12 @@ function removeButtonListeners() {
 }
 
 
+
 function createComments(commentsData) {
+  if (!commentsData) {
+    return undefined;
+  }
+
   const fragment = document.createDocumentFragment();
   commentsData.forEach((comment) => {
     const article = document.createElement('article');
@@ -132,6 +142,10 @@ function createComments(commentsData) {
 
 
 function populateSelectMenu(usersData) {
+  if (!usersData) {
+    return undefined;
+  }
+
   const selectMenu = document.querySelector('#selectMenu');
   const options = createSelectOptions(usersData);
   options.forEach((option) => {
@@ -154,6 +168,10 @@ async function getUsers() {
 
 
 async function getUserPosts(userId) {
+  if (!userId) {
+    return undefined;
+  }
+
   try {
     const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
     const data = await response.json();
@@ -165,7 +183,12 @@ async function getUserPosts(userId) {
 
 
 
+
 async function getUser(userId) {
+  if (!userId) {
+    return undefined;
+  }
+
   try {
     const response = await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`);
     const data = await response.json();
@@ -178,6 +201,10 @@ async function getUser(userId) {
 
 
 async function getPostComments(postId) {
+  if (!postId) {
+    return undefined;
+  }
+
   try {
     const response = await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${postId}`);
     const data = await response.json();
@@ -188,7 +215,12 @@ async function getPostComments(postId) {
 }
 
 
+
 async function displayComments(postId) {
+  if (!postId) {
+    return undefined;
+  }
+
   const section = document.createElement('section');
   section.dataset.postId = postId;
   section.classList.add('comments', 'hide');
@@ -199,25 +231,33 @@ async function displayComments(postId) {
 }
 
 
+
 async function createPosts(posts) {
-    const fragment = document.createDocumentFragment();
-    for (const post of posts) {
-        const article = document.createElement('article');
-        const h2 = createElemWithText('h2', post.title);
-        const p1 = createElemWithText('p', post.body);
-        const p2 = createElemWithText('p', `Post ID: ${post.id}`);
-        const author = await getUser(post.userId);
-        const p3 = createElemWithText('p', `Author: ${author.name} with ${author.company.name}`);
-        const p4 = createElemWithText('p', author.company.catchPhrase);
-        const button = createElemWithText('button', 'Show Comments');
-        button.dataset.postId = post.id;
-        article.append(h2, p1, p2, p3, p4, button);
-        const section = await displayComments(post.id);
-        article.append(section);
-        fragment.append(article);
+  if (!posts) {
+    return undefined;
+  }
+
+  const fragment = document.createDocumentFragment();
+  for (const post of posts) {
+    const article = document.createElement('article');
+    const h2 = createElemWithText('h2', post.title);
+    const p1 = createElemWithText('p', post.body);
+    const p2 = createElemWithText('p', `Post ID: ${post.id}`);
+    const author = await getUser(post.userId);
+    const p3 = createElemWithText('p', `Author: ${author.name} with ${author.company.name}`);
+    const p4 = createElemWithText('p', author.company.catchPhrase);
+    const button = createElemWithText('button', 'Show Comments');
+    button.dataset.postId = post.id;
+    article.append(h2, p1, p2, p3, p4, button);
+    const section = await displayComments(post.id);
+    if (section) {
+      article.append(section);
     }
-    return fragment;
+    fragment.append(article);
+  }
+  return fragment;
 }
+
 
 
 async function displayPosts(postsData) {
@@ -233,7 +273,10 @@ async function displayPosts(postsData) {
 }
 
 
+
 function toggleComments(event, postId) {
+  if (!event || !postId) return;
+
   event.target.listener = true;
   const section = toggleCommentSection(postId);
   const button = toggleCommentButton(postId);
@@ -243,6 +286,8 @@ function toggleComments(event, postId) {
 
 
 async function refreshPosts(postsData) {
+  if (!postsData) return;
+
   const removeButtons = removeButtonListeners();
   const main = deleteChildElements(document.querySelector('main'));
   const fragment = await displayPosts(postsData);
@@ -251,26 +296,40 @@ async function refreshPosts(postsData) {
 }
 
 
-const selectMenuChangeEventHandler = async (event) => {
-  const selectMenu = event.target;
-  selectMenu.disabled = true;
+
+async function selectMenuChangeEventHandler(event) {
+  if (!event) return;
+
+  const getUserPostsResponse = await fetch('/api/user-posts');
+  const refreshPostsResponse = await fetch('/api/refresh-posts');
+
+  event.target.disabled = true;
 
   const userId = event.target.value || 1;
-  const posts = await getUserPosts(userId);
-  const refreshPostsArray = await refreshPosts(posts);
 
-  selectMenu.disabled = false;
+  const userPosts = await getUserPostsResponse.json();
+  const posts = userPosts.filter(post => post.userId === userId);
+
+  const refreshPostsArray = await refreshPostsResponse.json();
+
+  event.target.disabled = false;
 
   return [userId, posts, refreshPostsArray];
-};
+}
 
 
 
-const initPage = async () => {
+async function initPage() {
+  const getUsers = await fetch('/api/users');
+  const populateSelectMenu = (users) => {
+  };
+
   const users = await getUsers();
+
   const select = populateSelectMenu(users);
+
   return [users, select];
-};
+}
 
 
 
